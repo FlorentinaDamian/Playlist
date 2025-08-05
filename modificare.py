@@ -98,7 +98,6 @@ class EditSongsWindow:
         tags_raw = self.tags_var.get()
         tags = [tag.strip() for tag in tags_raw.split(",") if tag.strip()]
 
-        # extragem filename-ul original pentru a nu pierde informația
         original_song = next((s for s in self.songs if s[0] == self.selected_song_id), None)
         filename = original_song[2] if original_song else ""
 

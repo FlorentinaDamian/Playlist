@@ -8,6 +8,10 @@ import webbrowser
 import json
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from dotenv import load_dotenv
+import os
+import bcrypt
+
 class LoginWindow:
     def __init__(self, root, db, on_login_success):
         self.root = root
@@ -96,8 +100,9 @@ class LoginWindow:
             messagebox.showerror("Login Failed",str(e))
 
     def facebook_login(self):
-        client_id = "client_id"
-        client_secret = "client_secret"
+        load_dotenv()
+        client_id =os.getenv('FACEBOOK_CLIENT_ID')
+        client_secret = os.getenv('FACEBOOK_CLIENT_SECRET')
         redirect_uri = "http://localhost:8080/callback"
 
         scope = ['email']
@@ -199,35 +204,45 @@ class LoginWindow:
         if self.password_entry.get() == 'Password':
             self.password_entry.delete(0,END)
 
-
-
-
+    import bcrypt
     def login(self):
         username = self.username_entry.get()
-        password = self.password_entry.get()
-        self.cursor.execute("SELECT id FROM users WHERE username=%s AND password=%s", (username, password))
+        password = self.password_entry.get().encode('utf-8')
+
+        self.cursor.execute("SELECT id, password FROM users WHERE username=%s", (username,))
         user = self.cursor.fetchone()
+
         if user:
-            user_id = user[0]
-            messagebox.showinfo("Login reușit", f"Bun venit, {username}!")
-            self.root.destroy()
-            self.on_login_success(user_id)
+            user_id, hashed_password = user
+            if bcrypt.checkpw(password,
+                              hashed_password.encode('utf-8') if isinstance(hashed_password, str) else hashed_password):
+                messagebox.showinfo("Login reușit", f"Bun venit, {username}!")
+                self.root.destroy()
+                self.on_login_success(user_id)
+            else:
+                messagebox.showerror("Eroare", "Parolă greșită.")
         else:
-            messagebox.showerror("Eroare", "Username sau parolă greșite.")
+            messagebox.showerror("Eroare", "Username-ul nu există.")
+
+
 
     def signup(self):
         username = self.username_entry.get()
-        password = self.password_entry.get()
+        password = self.password_entry.get().encode('utf-8')  # encode la bytes
+
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())  # hash parola
+
         try:
-            self.cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+            self.cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
             self.db.conn.commit()
             messagebox.showinfo("Cont creat", "Cont creat cu succes. Te poți loga.")
-        except:
-            messagebox.showerror("Eroare", "Numele de utilizator există deja.")
+        except Exception as e:
+            messagebox.showerror("Eroare", f"Numele de utilizator există deja sau altă eroare: {e}")
 
     def github(self):
-        client_id = "cliet_id"
-        client_secret = "client_secret"
+        load_dotenv()
+        client_id = os.getenv("GITHUB_CLIENT_ID")
+        client_secret = os.getenv("GITHUB_CLIENT_SECRET")
         redirect_uri = "http://localhost:8080/callback"
 
         scope = 'read:user,user:email'

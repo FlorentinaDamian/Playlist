@@ -97,6 +97,7 @@ class SignupWindow:
                 messagebox.showerror("Error", "Username Already Exists")
                 return
 
+
             cod = trimite_email_verificare(email)
             if not cod:
                 messagebox.showerror("Error", "Nu s-a putut trimite emailul.")

@@ -2,18 +2,21 @@ import smtplib
 import random
 from email.message import EmailMessage
 from tkinter import *
+import os
+from dotenv import load_dotenv
+load_dotenv()
 def trimite_email_verificare(destinatar):
     cod = str(random.randint(100000, 999999))
     email = EmailMessage()
-    email['From'] = "adresa88@gmail.com"
+    email['From'] = "damianflorentina88@gmail.com"
     email['To'] = destinatar
     email['Subject'] = "Cod de verificare cont"
     email.set_content(f"Codul tău de verificare este: {cod}")
-
+    smtp_password = os.getenv('SMTP_PASSWORD')
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
 
-            smtp.login('adresa@gmail.com', 'password')
+            smtp.login('damianflorentina88@gmail.com', smtp_password)
             smtp.send_message(email)
         return cod
     except Exception as e:

@@ -1,11 +1,17 @@
 
 import mysql.connector
-
+from dotenv import load_dotenv
+import os
+load_dotenv(dotenv_path=r"C:\Users\damia\Desktop\Proicte_Cv\Python\Playlist\.env")
+password=os.getenv("PASSWORD")
+print("Parola încărcată:", password)
 class Database:
-    def __init__(self, user='root', password='password', host='localhost'):
+    def __init__(self, user='root', passwd=None, host='localhost'):
+        if passwd is None:
+            passwd = os.getenv("PASSWORD")
         self.conn = mysql.connector.connect(
             user=user,
-            password=password,
+            passwd=passwd,  # folosește parametrul corect aici
             host=host
         )
         self.cursor = self.conn.cursor()
